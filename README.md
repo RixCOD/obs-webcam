@@ -1,56 +1,87 @@
 # OBS Webcam
 
-Use your phone as a webcam source in OBS Studio through a browser-based connection.
+<p align="center">
+  <strong>Turn your phone into a webcam for OBS Studio.</strong>
+  <br />
+  Stream your phone's camera to your computer using a browser-based WebRTC connection.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-Backend-339933?logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/WebRTC-Video%20Streaming-333333?logo=webrtc&logoColor=white" alt="WebRTC" />
+  <img src="https://img.shields.io/badge/OBS%20Studio-Compatible-302E31?logo=obsstudio&logoColor=white" alt="OBS Studio" />
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white" alt="Windows" />
+</p>
+
+---
+
+## Overview
+
+**OBS Webcam** is a browser-based project designed to connect your phone's camera to OBS Studio through a computer running a Node.js and Express server.
+
+The project uses WebRTC for video streaming and provides browser pages for the phone and receiver.
 
 ## Features
 
-- Connect a phone and computer through a web browser.
-- Stream video using WebRTC.
-- Use a browser receiver page as a source in OBS Studio.
-- Lightweight Node.js and Express server.
+| Feature | Description |
+|---|---|
+| Phone camera | Access your phone camera through a browser |
+| WebRTC streaming | Send video between connected browser pages |
+| OBS integration | Use the receiver page as an OBS Browser source, if supported by the current setup |
+| HTTPS setup | PowerShell script helps generate local development certificates |
+| Simple setup | Install dependencies and start the server with one script |
 
 ## Requirements
 
 - [Node.js](https://nodejs.org/)
 - [OBS Studio](https://obsproject.com/)
-- A phone and computer connected to the same network, unless your server is hosted for remote access.
+- A phone and computer connected to the same Wi-Fi network for local testing
+- Windows PowerShell
+- `mkcert` or OpenSSL for certificate generation
 
-## Installation
+## Getting Started
 
-1. Clone the repository:
+### 1. Clone the repository
 
-   ```bash
-   git clone https://github.com/RixCOD/obs-webcam.git
-   cd obs-webcam
-   ```
+```powershell
+git clone https://github.com/RixCOD/obs-webcam.git
+cd obs-webcam
+```
 
-2. Install dependencies:
+### 2. Run the setup script
 
-   ```bash
-   npm install
-   ```
+Make sure `setup-obs-webcam.ps1` is in the repository's root folder.
 
-3. Start the server using the start command configured in `package.json`:
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\setup-obs-webcam.ps1
+```
 
-   ```bash
-   npm start
-   ```
+The script is intended to:
 
-   If no start script is configured, run:
+- Check Node.js and npm
+- Install project dependencies
+- Update `.gitignore` for local secrets and certificates
+- Generate HTTPS certificates if needed
+- Start `server.js`
 
-   ```bash
-   node server.js
-   ```
-
-4. Open the local address configured by your server in a browser.
-
-## Using with OBS Studio
+### 3. Connect your phone
 
 1. Start the server.
-2. Open the phone page on your phone and allow camera access.
+2. Find the HTTPS URL printed in the terminal.
+3. Open the appropriate URL on your phone while connected to the same network.
+4. Grant camera permission when prompted.
+
+> **Note:** Self-signed certificates may trigger browser warnings. Your phone may need to trust the certificate before camera access will work.
+
+## Using OBS Studio
+
+1. Start the project server.
+2. Open the phone camera page in your phone's browser.
 3. Open the receiver page on your computer.
-4. In OBS Studio, add a **Browser** source and use the receiver page URL if the project supports loading it directly in OBS.
-5. Confirm that the video appears in OBS.
+4. In OBS Studio, add a **Browser** source.
+5. Enter the receiver page URL if your current implementation supports it.
+6. Confirm that the video appears in OBS.
 
 ## Project Structure
 
@@ -62,28 +93,28 @@ obs-webcam/
 ├── server.js
 ├── package.json
 ├── package-lock.json
+├── setup-obs-webcam.ps1
 ├── .gitignore
 └── README.md
 ```
-1. Open your project repository in a terminal or PowerShell.
 
-2. Run these commands:
+## Security
 
-   ```powershell
-   cd F:\Path to the repo\Git\obs-webcam
-   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-   .\setup-obs-webcam.ps1
-   ```
+- Never commit `key.pem`, private keys, or `.env` files.
+- Allow camera access only on devices and pages you trust.
+- HTTPS certificates must be valid for the hostname or IP address you use.
+- A certificate warning does not mean the connection is trusted or secure.
 
-3. Wait for the script to install dependencies, set up the HTTPS certificate, and start `server.js`.
+## Contributing
 
-4. Open the HTTPS URL shown in the terminal to test the application.
-## Security Notes
-
-- Do not commit private keys, certificates, or `.env` files.
-- Camera access requires browser permission.
-- HTTPS may be required for camera access on devices other than localhost.
+Contributions, bug reports, and suggestions are welcome. Open an issue to discuss a change before submitting a pull request.
 
 ## License
 
 No license has been specified yet.
+
+---
+
+<p align="center">
+  Made for creators using <a href="https://obsproject.com/">OBS Studio</a>.
+</p>
