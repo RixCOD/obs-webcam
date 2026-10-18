@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OBS Camera Receiver</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          darkBg: '#08090b',
+          cardBg: '#151619',
+          borderDark: '#292a2e'
+        }
+      }
+    }
+  }
+</script>
+<style>
+#video{
+  position:absolute;left:50%;top:50%;
+  width:100%;height:100%;
+  object-fit:contain;display:block;
+  transform:translate(-50%, -50%);
+  transform-origin:center center;
+}
+</style>
+</head>
+<body class="bg-black text-gray-100 font-sans antialiased w-screen h-screen overflow-hidden selection:bg-zinc-700">
+
+<div id="stage" class="absolute inset-0 overflow-hidden bg-black">
+  <video id="video" autoplay playsinline></video>
+</div>
+
+<div id="status" class="fixed top-4 left-4 bg-zinc-900/90 backdrop-blur-md border border-borderDark px-4 py-2.5 rounded-xl text-xs font-medium z-20 shadow-2xl">Waiting for phone camera...</div>
+
+<div class="fixed top-4 right-4 flex gap-2 z-30">
+  <button id="fullscreenBtn" class="bg-cardBg hover:bg-zinc-800 border border-borderDark px-3.5 py-2 rounded-xl text-xs font-semibold shadow-lg transition flex items-center gap-1.5">⛶ Fullscreen</button>
+</div>
+
+<script>
+const video = document.querySelector("#video");
+const status = document.querySelector("#status");
+
+let ws, pc;
+let pendingCandidates = [];
+
+document.querySelector("#fullscreenBtn").onclick = async () => {
+  try {
+    if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  } catch(e) { status.textContent = "Fullscreen unavailable"; }
+};
+
+function send(message){
+  if(ws?.readyState === WebSocket.OPEN){ ws.send(JSON.stringify(message)); }
+}
+
+function connectSignal(){
+  ws = new WebSocket(`${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/signal?role=receiver`);
+
+  ws.onopen = () => {
+    send({ type: "receiver-ready" });
+    status.textContent = "Connected; waiting for camera...";
+  };
+
+  ws.onclose = () => {
+    status.textContent = "Signaling disconnected. Reload to retry.";
+  };
+
+  ws.onerror = () => {
+    status.textContent = "Signaling connection error";
+  };
+
+  ws.onmessage = async event => {
+    const msg = JSON.parse(event.data);
+    try {
+      if(msg.type === "camera-ready" && !pc){
+        send({ type: "receiver-ready" });
+      }
+
+      if(msg.type === "offer"){
+        if(pc) pc.close();
+        pendingCandidates = [];
+
+        pc = new RTCPeerConnection({ iceServers: [] });
+
+        pc.ontrack = async event => {
+          video.srcObject = event.streams[0];
+          try { await video.play(); } catch(error) { console.error("Playback failed:", error); }
+        };
+
+        pc.onicecandidate = event => {
+          if(event.candidate){ send({ type: "candidate", candidate: event.candidate }); }
+        };
+
+        pc.onconnectionstatechange = () => {
+          if(!pc) return;
+          status.textContent = "WebRTC: " + pc.connectionState;
+          if(pc.connectionState === "connected") {
+            setTimeout(() => status.classList.add("hidden"), 1500);
+          }
+        };
+
+        await pc.setRemoteDescription(msg.description);
+
+        for(const candidate of pendingCandidates){
+          await pc.addIceCandidate(candidate);
+        }
+        pendingCandidates = [];
+
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+
+        send({ type: "answer", description: pc.localDescription });
+      }
+
+      if(msg.type === "candidate"){
+        if(pc?.remoteDescription){
+          await pc.addIceCandidate(msg.candidate);
+        } else {
+          pendingCandidates.push(msg.candidate);
+        }
+      }
+
+      if(msg.type === "peer-disconnected" || msg.type === "stop"){
+        video.srcObject = null;
+        status.classList.remove("hidden");
+        status.textContent = msg.type === "stop" ? "Camera stopped" : "Phone disconnected";
+        if(pc){ pc.close(); pc = null; }
+        pendingCandidates = [];
+      }
+    } catch(error) {
+      console.error(error);
+      status.classList.remove("hidden");
+      status.textContent = "Receiver error: " + error.message;
+    }
+  };
+}
+
+connectSignal();
+</script>
+</body>
+</html>
