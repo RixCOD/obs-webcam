@@ -65,7 +65,19 @@ obs-webcam/
 ├── .gitignore
 └── README.md
 ```
+1. Open your project repository in a terminal or PowerShell.
 
+2. Run these commands:
+
+   ```powershell
+   cd F:\Path to the repo\Git\obs-webcam
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   .\setup-obs-webcam.ps1
+   ```
+
+3. Wait for the script to install dependencies, set up the HTTPS certificate, and start `server.js`.
+
+4. Open the HTTPS URL shown in the terminal to test the application.
 ## Security Notes
 
 - Do not commit private keys, certificates, or `.env` files.
