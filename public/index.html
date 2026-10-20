@@ -20,7 +20,7 @@
   }
 </script>
 </head>
-<body class="bg-darkBg text-gray-100 font-sans antialiased min-h-screen selection:bg-zinc-700">
+<body class="bg-darkBg text-gray-100 font-sans antialiased min-h-screen selection:bg-zinc-700 pb-12">
 <div class="max-w-xl mx-auto p-4 space-y-3">
   
   <!-- Header -->
@@ -29,18 +29,15 @@
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" id="statusIndicator"></span>
       CAM / LIVE
     </div>
-    <div class="flex items-center gap-2">
-      <button id="settingsToggleBtn" class="bg-cardBg hover:bg-zinc-800 border border-borderDark px-3 py-1 rounded-full text-xs font-semibold transition flex items-center gap-1">⚙ Settings</button>
-      <div id="status" class="text-xs font-medium text-emerald-400 bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-800/40">● OFFLINE</div>
-    </div>
+    <div id="status" class="text-xs font-medium text-emerald-400 bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-800/40">● OFFLINE</div>
   </header>
 
   <!-- Hidden video input -->
   <video id="inputVideo" autoplay muted playsinline class="hidden"></video>
 
-  <!-- Preview Screen -->
-  <div id="previewContainer" class="relative bg-black rounded-2xl overflow-hidden aspect-[9/16] max-h-[55vh] mx-auto border border-borderDark shadow-2xl transition-all">
-    <canvas id="output" width="1080" height="1920" class="w-full h-full object-contain block"></canvas>
+  <!-- Preview Screen Container -->
+  <div id="previewContainer" class="relative bg-black rounded-2xl overflow-hidden aspect-[9/16] max-h-[52vh] mx-auto border border-borderDark shadow-2xl transition-all flex items-center justify-center">
+    <canvas id="output" width="1080" height="1920" class="w-full h-full object-cover block"></canvas>
     
     <!-- Video Overlay Info -->
     <div class="absolute inset-x-3 top-3 flex justify-between pointer-events-none z-10">
@@ -54,28 +51,33 @@
     </button>
   </div>
 
-  <!-- Main Actions -->
-  <div class="grid grid-cols-3 gap-2">
-    <button id="start" class="col-span-1 bg-white text-black hover:bg-gray-200 active:scale-[0.98] font-bold py-3 px-4 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-1.5">● START</button>
-    <button id="switch" class="bg-cardBg hover:bg-zinc-800 border border-borderDark active:scale-[0.98] py-3 px-4 rounded-xl text-sm transition font-medium flex items-center justify-center gap-1.5">↻ FLIP</button>
-    <button id="mirror" class="bg-cardBg hover:bg-zinc-800 border border-borderDark active:scale-[0.98] py-3 px-4 rounded-xl text-sm transition font-medium flex items-center justify-center gap-1.5">MIRROR: OFF</button>
+  <!-- Main Actions & Settings Button -->
+  <div class="grid grid-cols-4 gap-2">
+    <button id="start" class="col-span-1 bg-white text-black hover:bg-gray-200 active:scale-[0.98] font-bold py-3 px-3 rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-1">● START</button>
+    <button id="switch" class="bg-cardBg hover:bg-zinc-800 border border-borderDark active:scale-[0.98] py-3 px-3 rounded-xl text-xs transition font-medium flex items-center justify-center gap-1">↻ FLIP</button>
+    <button id="mirror" class="bg-cardBg hover:bg-zinc-800 border border-borderDark active:scale-[0.98] py-3 px-3 rounded-xl text-xs transition font-medium flex items-center justify-center gap-1">MIRROR: OFF</button>
+    <button id="settingsToggleBtn" class="bg-cardBg hover:bg-zinc-800 border border-borderDark active:scale-[0.98] py-3 px-3 rounded-xl text-xs transition font-semibold flex items-center justify-center gap-1">⚙ SETTINGS</button>
   </div>
 
   <!-- Collapsible Settings Panel -->
   <div id="settingsPanel" class="hidden space-y-2.5 pt-1">
+    
+    <!-- Resolutions, FPS & Orientation -->
     <div class="grid grid-cols-3 gap-2.5">
       <div class="bg-cardBg border border-borderDark p-3 rounded-xl">
         <label class="block text-zinc-400 text-[11px] font-semibold mb-1.5 tracking-wider">RESOLUTION</label>
         <select id="resolution" class="w-full bg-zinc-900 border border-borderDark rounded-lg px-2 py-2 text-xs text-zinc-200 focus:outline-none focus:border-zinc-500">
+          <option value="480">480p</option>
           <option value="720">720p</option>
           <option value="1080" selected>1080p</option>
+          <option value="1440">2K (1440p)</option>
           <option value="2160">4K</option>
         </select>
       </div>
       <div class="bg-cardBg border border-borderDark p-3 rounded-xl">
         <label class="block text-zinc-400 text-[11px] font-semibold mb-1.5 tracking-wider">FRAME RATE</label>
         <select id="fps" class="w-full bg-zinc-900 border border-borderDark rounded-lg px-2 py-2 text-xs text-zinc-200 focus:outline-none focus:border-zinc-500">
-          <option>24</option><option selected>30</option><option>60</option>
+          <option>15</option><option>24</option><option selected>30</option><option>50</option><option>60</option>
         </select>
       </div>
       <div class="bg-cardBg border border-borderDark p-3 rounded-xl">
@@ -87,20 +89,44 @@
       </div>
     </div>
 
+    <!-- Custom Res & FPS Adder Box -->
+    <div class="bg-cardBg border border-borderDark p-3 rounded-xl space-y-2">
+      <label class="block text-zinc-400 text-[11px] font-semibold tracking-wider">ADD CUSTOM RESOLUTION / FPS</label>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="flex gap-1.5">
+          <input id="customResInput" type="number" placeholder="Height (e.g., 900)" class="w-full bg-zinc-900 border border-borderDark rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-zinc-500 text-zinc-200">
+          <button id="addResBtn" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-lg text-xs font-semibold border border-borderDark">+Add</button>
+        </div>
+        <div class="flex gap-1.5">
+          <input id="customFpsInput" type="number" placeholder="FPS (e.g., 48)" class="w-full bg-zinc-900 border border-borderDark rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-zinc-500 text-zinc-200">
+          <button id="addFpsBtn" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-lg text-xs font-semibold border border-borderDark">+Add</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Cinematic & Color Looks -->
     <div class="bg-cardBg border border-borderDark p-3 rounded-xl space-y-2">
       <label class="block text-zinc-400 text-[11px] font-semibold tracking-wider">CINEMATIC PRESETS & LUTS</label>
-      <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div id="looksList" class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         <button class="look active flex-shrink-0 py-2 px-3 bg-zinc-700 border border-borderDark rounded-lg text-xs font-medium transition" data-look="natural">Natural</button>
         <button class="look flex-shrink-0 py-2 px-3 bg-zinc-900 border border-borderDark rounded-lg text-xs font-medium hover:bg-zinc-800 transition" data-look="cinematic">🎬 Cinematic</button>
         <button class="look flex-shrink-0 py-2 px-3 bg-zinc-900 border border-borderDark rounded-lg text-xs font-medium hover:bg-zinc-800 transition" data-look="film">Film</button>
         <button class="look flex-shrink-0 py-2 px-3 bg-zinc-900 border border-borderDark rounded-lg text-xs font-medium hover:bg-zinc-800 transition" data-look="teal">Teal/Orange</button>
         <button class="look flex-shrink-0 py-2 px-3 bg-zinc-900 border border-borderDark rounded-lg text-xs font-medium hover:bg-zinc-800 transition" data-look="warm">Warm Film</button>
         <button class="look flex-shrink-0 py-2 px-3 bg-zinc-900 border border-borderDark rounded-lg text-xs font-medium hover:bg-zinc-800 transition" data-look="bw">B&W Noir</button>
-        <button class="look flex-shrink-0 py-2 px-3 bg-zinc-900 border border-borderDark rounded-lg text-xs font-medium hover:bg-zinc-800 transition" id="loadLut">📁 Custom .CUBE</button>
+        <button class="look flex-shrink-0 py-2 px-3 bg-zinc-900 border border-borderDark rounded-lg text-xs font-medium hover:bg-zinc-800 transition" id="loadLut">📁 Import .CUBE</button>
       </div>
       <input id="file" type="file" accept=".cube,text/plain" class="hidden">
       <div class="text-[11px] text-zinc-500" id="lutName">Built-in color grading engine</div>
+    </div>
+
+    <!-- Zoom Control Slider -->
+    <div class="bg-cardBg border border-borderDark p-3 rounded-xl space-y-1.5">
+      <div class="flex justify-between text-[11px] font-semibold text-zinc-400">
+        <label>ZOOM OUT / IN</label>
+        <span id="zoomValue" class="text-zinc-200">1.0x</span>
+      </div>
+      <input id="zoom" type="range" min="1" max="5" step="0.1" value="1" class="w-full accent-white cursor-pointer">
     </div>
 
     <!-- Look Intensity Slider -->
@@ -136,6 +162,14 @@ const settingsToggleBtn = document.querySelector("#settingsToggleBtn");
 const previewContainer = document.querySelector("#previewContainer");
 const previewFullscreenBtn = document.querySelector("#previewFullscreenBtn");
 
+const resSelect = document.querySelector("#resolution");
+const fpsSelect = document.querySelector("#fps");
+const customResInput = document.querySelector("#customResInput");
+const customFpsInput = document.querySelector("#customFpsInput");
+const addResBtn = document.querySelector("#addResBtn");
+const addFpsBtn = document.querySelector("#addFpsBtn");
+const looksList = document.querySelector("#looksList");
+
 const gl = canvas.getContext("webgl2", { alpha: false, antialias: false, preserveDrawingBuffer: false });
 
 if (!gl) {
@@ -143,22 +177,72 @@ if (!gl) {
   throw new Error("This browser needs WebGL2 for LUT processing.");
 }
 
-// Toggle Settings Drawer
-settingsToggleBtn.onclick = () => {
-  settingsPanel.classList.toggle("hidden");
+let savedRes = JSON.parse(localStorage.getItem("cam_custom_res") || "[]");
+let savedFps = JSON.parse(localStorage.getItem("cam_custom_fps") || "[]");
+let savedLuts = JSON.parse(localStorage.getItem("cam_custom_luts") || "[]");
+
+function renderCustomOptions() {
+  savedRes.forEach(r => {
+    if(![...resSelect.options].some(o => o.value == r)) {
+      const opt = document.createElement("option");
+      opt.value = r; opt.textContent = `${r}p (Custom)`;
+      resSelect.appendChild(opt);
+    }
+  });
+  savedFps.forEach(f => {
+    if(![...fpsSelect.options].some(o => o.value == f)) {
+      const opt = document.createElement("option");
+      opt.value = f; opt.textContent = `${f} FPS`;
+      fpsSelect.appendChild(opt);
+    }
+  });
+  savedLuts.forEach(lut => {
+    if (!document.querySelector(`[data-saved-lut="${lut.name}"]`)) {
+      const btn = document.createElement("button");
+      btn.className = "look flex-shrink-0 py-2 px-3 bg-zinc-900 border border-borderDark rounded-lg text-xs font-medium hover:bg-zinc-800 transition";
+      btn.dataset.savedLut = lut.name;
+      btn.textContent = `🎨 ${lut.name}`;
+      btn.onclick = () => {
+        applyCube(lut.text, lut.name);
+        currentLook = "natural";
+        updateActiveLookBtn(btn);
+      };
+      looksList.insertBefore(btn, document.querySelector("#loadLut"));
+    }
+  });
+}
+renderCustomOptions();
+
+addResBtn.onclick = () => {
+  const val = Number(customResInput.value);
+  if(val && val >= 240 && val <= 4320) {
+    if(!savedRes.includes(val)) savedRes.push(val);
+    localStorage.setItem("cam_custom_res", JSON.stringify(savedRes));
+    renderCustomOptions();
+    resSelect.value = val;
+    resizeCanvas();
+    customResInput.value = "";
+  }
 };
 
-// Fullscreen Preview Toggle
+addFpsBtn.onclick = () => {
+  const val = Number(customFpsInput.value);
+  if(val && val >= 1 && val <= 120) {
+    if(!savedFps.includes(val)) savedFps.push(val);
+    localStorage.setItem("cam_custom_fps", JSON.stringify(savedFps));
+    renderCustomOptions();
+    fpsSelect.value = val;
+    customFpsInput.value = "";
+  }
+};
+
+settingsToggleBtn.onclick = () => settingsPanel.classList.toggle("hidden");
+
 previewFullscreenBtn.onclick = async () => {
   try {
-    if (!document.fullscreenElement) {
-      await previewContainer.requestFullscreen();
-    } else {
-      await document.exitFullscreen();
-    }
-  } catch (err) {
-    console.warn("Fullscreen toggle error:", err);
-  }
+    if (!document.fullscreenElement) await previewContainer.requestFullscreen();
+    else await document.exitFullscreen();
+  } catch (err) { console.warn("Fullscreen toggle error:", err); }
 };
 
 let cameraStream, pc, ws, renderLoop;
@@ -178,18 +262,19 @@ async function restoreWakeLock() {
 }
 document.addEventListener("visibilitychange", restoreWakeLock);
 
-let facing = "environment", mirrored = true, running = false;
+let facing = "environment", mirrored = false, running = false;
 let currentLook = "natural", lutTexture = null, lutSize = 0;
-let intensity = 1, exposure = 0;
+let intensity = 1, exposure = 0, zoomLevel = 1;
 let pendingCandidates = [];
 let activeCameraTrack = null;
 
 const vertexSource = `#version 300 es
 in vec2 position;
+uniform vec2 scale;
 out vec2 uv;
 void main(){
-  uv=(position+1.0)*0.5;
-  gl_Position=vec4(position,0.0,1.0);
+  uv = (position + 1.0) * 0.5;
+  gl_Position = vec4(position * scale, 0.0, 1.0);
 }`;
 
 const fragmentSource = `#version 300 es
@@ -207,53 +292,42 @@ uniform float exposureAmount;
 
 vec3 grade(vec3 c) {
   c *= exp2(exposureAmount);
-  
-  if (look == 1) { // Film
-    c = (c - 0.5) * 1.10 + 0.52;
-    c.r *= 1.04; c.b *= 0.96;
+  if (look == 1) {
+    c = (c - 0.5) * 1.10 + 0.52; c.r *= 1.04; c.b *= 0.96;
     c = mix(c, smoothstep(vec3(0.0),vec3(1.0),c), 0.20);
-  } else if (look == 2) { // Teal / Orange
+  } else if (look == 2) {
     float y = dot(c,vec3(.2126,.7152,.0722));
-    c = mix(c, vec3(y), 0.10);
-    c.r = min(1.0,c.r*1.10 + .025);
-    c.g = min(1.0,c.g*1.01);
-    c.b = min(1.0,c.b*1.10 + .018);
-  } else if (look == 3) { // Warm
+    c = mix(c, vec3(y), 0.10); c.r = min(1.0,c.r*1.10 + .025); c.g = min(1.0,c.g*1.01); c.b = min(1.0,c.b*1.10 + .018);
+  } else if (look == 3) {
     c.r *= 1.08; c.g *= 1.015; c.b *= .91;
-  } else if (look == 4) { // B&W
-    float y = dot(c,vec3(.2126,.7152,.0722));
-    c = vec3(y);
-    c = (c-.5)*1.12+.5;
-  } else if (look == 5) { // Cinematic (high contrast, rich shadows, teal-golden tones)
-    c = pow(c, vec3(1.05));
-    c = (c - 0.5) * 1.18 + 0.5;
-    c.r = pow(c.r, 0.95) * 1.05;
-    c.g = pow(c.g, 1.00);
-    c.b = pow(c.b, 1.08) * 0.92;
+  } else if (look == 4) {
+    float y = dot(c,vec3(.2126,.7152,.0722)); c = vec3(y); c = (c-.5)*1.12+.5;
+  } else if (look == 5) {
+    c = pow(c, vec3(1.05)); c = (c - 0.5) * 1.18 + 0.5;
+    c.r = pow(c.r, 0.95) * 1.05; c.g = pow(c.g, 1.00); c.b = pow(c.b, 1.08) * 0.92;
   }
   return clamp(c,0.0,1.0);
 }
 
 void main(){
-  vec2 p=uv;
-  if(mirrorImage) p.x=1.0-p.x;
-  vec3 original=texture(cameraImage,p).rgb;
-  vec3 processed=original;
+  vec2 p = uv;
+  if(mirrorImage) p.x = 1.0 - p.x;
+  vec3 original = texture(cameraImage, p).rgb;
+  vec3 processed = original;
   if(hasLut) {
-    vec3 graded=texture(lutImage,clamp(original,0.0,1.0)).rgb;
-    processed=mix(original,graded,mixAmount);
+    vec3 graded = texture(lutImage, clamp(original, 0.0, 1.0)).rgb;
+    processed = mix(original, graded, mixAmount);
   } else {
-    processed=mix(original,grade(original),mixAmount);
+    processed = mix(original, grade(original), mixAmount);
   }
-  outColor=vec4(clamp(processed,0.0,1.0),1.0);
+  outColor = vec4(clamp(processed, 0.0, 1.0), 1.0);
 }`;
 
 function compile(type, source) {
   const shader = gl.createShader(type);
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-    throw new Error(gl.getShaderInfoLog(shader));
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader));
   return shader;
 }
 
@@ -261,8 +335,7 @@ const program = gl.createProgram();
 gl.attachShader(program, compile(gl.VERTEX_SHADER, vertexSource));
 gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragmentSource));
 gl.linkProgram(program);
-if (!gl.getProgramParameter(program, gl.LINK_STATUS))
-  throw new Error(gl.getProgramInfoLog(program));
+if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
 gl.useProgram(program);
 
 const buffer = gl.createBuffer();
@@ -273,7 +346,7 @@ gl.enableVertexAttribArray(position);
 gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
 const uniforms = {};
-for (const name of ["cameraImage","lutImage","hasLut","mirrorImage","look","mixAmount","exposureAmount"])
+for (const name of ["scale","cameraImage","lutImage","hasLut","mirrorImage","look","mixAmount","exposureAmount"])
   uniforms[name] = gl.getUniformLocation(program, name);
 
 gl.uniform1i(uniforms.cameraImage, 0);
@@ -288,21 +361,42 @@ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 function resizeCanvas() {
-  const w = Number(document.querySelector("#resolution").value);
+  const w = Number(resSelect.value);
+  const fps = Number(fpsSelect.value);
   const portrait = document.querySelector("#orientation").value === "portrait";
   canvas.width = portrait ? Math.round(w * 9 / 16) : w;
   canvas.height = portrait ? w : Math.round(w * 9 / 16);
+  
+  document.querySelector("#resolutionTag").textContent = `${w}P · ${fps} FPS`;
+
+  if (portrait) {
+    previewContainer.className = "relative bg-black rounded-2xl overflow-hidden aspect-[9/16] max-h-[52vh] mx-auto border border-borderDark shadow-2xl transition-all flex items-center justify-center";
+  } else {
+    previewContainer.className = "relative bg-black rounded-2xl overflow-hidden aspect-[16/9] max-h-[52vh] mx-auto border border-borderDark shadow-2xl transition-all flex items-center justify-center";
+  }
+  
   gl.viewport(0, 0, canvas.width, canvas.height);
 }
 resizeCanvas();
 
 function draw() {
   if (video.readyState >= 2 && video.videoWidth) {
+    const vw = video.videoWidth, vh = video.videoHeight;
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, cameraTexture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
 
+    const sourceRatio = vw / vh;
+    const targetRatio = canvas.width / canvas.height;
+    let sx = 1.0, sy = 1.0;
+
+    if (sourceRatio > targetRatio) sx = sourceRatio / targetRatio;
+    else sy = targetRatio / sourceRatio;
+
+    sx *= zoomLevel; sy *= zoomLevel;
+
+    gl.uniform2f(uniforms.scale, sx, sy);
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform1i(uniforms.hasLut, !!lutTexture);
@@ -336,8 +430,7 @@ function parseCube(text) {
       data.push(...parts.slice(0, 3).map(Number));
     }
   }
-  if (!size || data.length !== size * size * size * 3)
-    throw new Error("Invalid .cube file or LUT_3D_SIZE");
+  if (!size || data.length !== size * size * size * 3) throw new Error("Invalid .cube file or LUT_3D_SIZE");
   return { size, data: new Float32Array(data) };
 }
 
@@ -356,16 +449,17 @@ function applyCube(text, name) {
   gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGB32F, lutSize, lutSize, lutSize, 0, gl.RGB, gl.FLOAT, parsed.data);
   gl.uniform1i(uniforms.lutImage, 1);
   document.querySelector("#lutName").textContent = name;
-  document.querySelector("#lookTag").textContent = "CUSTOM LUT";
+  document.querySelector("#lookTag").textContent = name.toUpperCase().slice(0, 12);
 }
 
 async function startCamera() {
-  const resolution = Number(document.querySelector("#resolution").value);
-  const fps = Number(document.querySelector("#fps").value);
+  const resolution = Number(resSelect.value);
+  const fps = Number(fpsSelect.value);
   const portrait = document.querySelector("#orientation").value === "portrait";
   const width = portrait ? Math.round(resolution * 9 / 16) : resolution;
   const height = portrait ? resolution : Math.round(resolution * 9 / 16);
 
+  // 1. Request Camera hardware access
   cameraStream = await navigator.mediaDevices.getUserMedia({
     audio: false,
     video: {
@@ -375,77 +469,71 @@ async function startCamera() {
       frameRate: { ideal: fps, max: fps }
     }
   });
+  
   video.srcObject = cameraStream;
   await video.play();
   await keepScreenAwake();
   activeCameraTrack = cameraStream.getVideoTracks()[0];
   resizeCanvas();
 
-  if (!running) {
-    draw();
-    running = true;
-  }
+  if (!running) { draw(); running = true; }
 
   const processedStream = canvas.captureStream(fps);
 
-  ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/signal?role=camera`);
-  await new Promise((resolve, reject) => {
-    ws.onopen = resolve;
-    ws.onerror = () => reject(new Error("Signaling connection failed"));
-  });
+  // 2. Safely try connecting to Signaling Server (won't block local camera if offline)
+  try {
+    ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/signal?role=camera`);
+    await new Promise((resolve, reject) => {
+      ws.onopen = resolve;
+      ws.onerror = () => reject(new Error("Signaling offline"));
+      setTimeout(() => reject(new Error("Signaling timeout")), 2500); // Fail fast so local cam works instantly
+    });
 
-  pc = new RTCPeerConnection({ iceServers: [] });
-  processedStream.getTracks().forEach(track => pc.addTrack(track, processedStream));
+    pc = new RTCPeerConnection({ iceServers: [] });
+    processedStream.getTracks().forEach(track => pc.addTrack(track, processedStream));
 
-  pc.onicecandidate = e => {
-    if (e.candidate) send({ type: "candidate", candidate: e.candidate });
-  };
-  pc.onconnectionstatechange = () => {
-    statusEl.textContent = "● " + pc.connectionState.toUpperCase();
-  };
-  ws.onmessage = async e => {
-    const msg = JSON.parse(e.data);
-    if (msg.type === "receiver-ready" && !pc.localDescription) {
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      send({ type: "offer", description: pc.localDescription });
-    }
-    if (msg.type === "answer") {
-      await pc.setRemoteDescription(msg.description);
-      for (const c of pendingCandidates) await pc.addIceCandidate(c);
-      pendingCandidates = [];
-    }
-    if (msg.type === "candidate") {
-      if (pc.remoteDescription) await pc.addIceCandidate(msg.candidate);
-      else pendingCandidates.push(msg.candidate);
-    }
-  };
-  send({ type: "camera-ready" });
+    pc.onicecandidate = e => { if (e.candidate) send({ type: "candidate", candidate: e.candidate }); };
+    pc.onconnectionstatechange = () => { statusEl.textContent = "● " + pc.connectionState.toUpperCase(); };
+    
+    ws.onmessage = async e => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === "receiver-ready" && !pc.localDescription) {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        send({ type: "offer", description: pc.localDescription });
+      }
+      if (msg.type === "answer") {
+        await pc.setRemoteDescription(msg.description);
+        for (const c of pendingCandidates) await pc.addIceCandidate(c);
+        pendingCandidates = [];
+      }
+      if (msg.type === "candidate") {
+        if (pc.remoteDescription) await pc.addIceCandidate(msg.candidate);
+        else pendingCandidates.push(msg.candidate);
+      }
+    };
+    send({ type: "camera-ready" });
+  } catch (err) {
+    console.warn("OBS Receiver WebSocket not connected. Running in local preview mode:", err.message);
+    statusEl.textContent = "● LOCAL PREVIEW ONLY";
+  }
+
   document.querySelector("#start").textContent = "■ STOP";
   statusIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
 }
 
-function send(msg) {
-  if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
-}
+function send(msg) { if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg)); }
 
 async function stopCamera() {
   if (wakeLock) { await wakeLock.release().catch(() => {}); wakeLock = null; }
   if (renderLoop) cancelAnimationFrame(renderLoop);
-  renderLoop = null;
-  running = false;
+  renderLoop = null; running = false;
 
-  if (pc) pc.close();
-  pc = null;
-  if (ws) ws.close();
-  ws = null;
+  if (pc) { pc.close(); pc = null; }
+  if (ws) { ws.close(); ws = null; }
 
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(track => track.stop());
-  }
-  cameraStream = null;
-  activeCameraTrack = null;
-  video.srcObject = null;
+  if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); }
+  cameraStream = null; activeCameraTrack = null; video.srcObject = null;
 
   statusEl.textContent = "● OFFLINE";
   document.querySelector("#start").textContent = "● START";
@@ -453,17 +541,21 @@ async function stopCamera() {
 }
 
 document.querySelector("#start").onclick = async () => {
-  if (cameraStream) { stopCamera(); return; }
+  if (cameraStream) { await stopCamera(); return; }
   try { await startCamera(); }
-  catch (e) { console.error(e); statusEl.textContent = "ERROR: " + e.message; stopCamera(); }
+  catch (e) { console.error(e); statusEl.textContent = "ERROR: " + e.message; await stopCamera(); }
 };
 
 document.querySelector("#switch").onclick = async () => {
-  if (!cameraStream) { facing = facing === "environment" ? "user" : "environment"; return; }
-  stopCamera();
   facing = facing === "environment" ? "user" : "environment";
-  try { await startCamera(); }
-  catch (e) { statusEl.textContent = e.message; stopCamera(); }
+  if (!cameraStream) return;
+  try {
+    document.querySelector("#switch").disabled = true;
+    await stopCamera();
+    await new Promise(r => setTimeout(r, 300));
+    await startCamera();
+  } catch(e) { statusEl.textContent = "FLIP ERROR: " + e.message; await stopCamera(); }
+  finally { document.querySelector("#switch").disabled = false; }
 };
 
 document.querySelector("#mirror").onclick = e => {
@@ -471,15 +563,19 @@ document.querySelector("#mirror").onclick = e => {
   e.currentTarget.textContent = "MIRROR: " + (mirrored ? "ON" : "OFF");
 };
 
+function updateActiveLookBtn(activeBtn) {
+  document.querySelectorAll(".look").forEach(b => {
+    b.classList.toggle("bg-zinc-700", b === activeBtn);
+    b.classList.toggle("bg-zinc-900", b !== activeBtn);
+  });
+}
+
 document.querySelectorAll("[data-look]").forEach(button => {
   button.onclick = () => {
     currentLook = button.dataset.look;
     if (lutTexture) { gl.deleteTexture(lutTexture); lutTexture = null; }
     document.querySelector("#lookTag").textContent = currentLook.toUpperCase();
-    document.querySelectorAll("[data-look]").forEach(b => {
-      b.classList.toggle("bg-zinc-700", b === button);
-      b.classList.toggle("bg-zinc-900", b !== button);
-    });
+    updateActiveLookBtn(button);
   };
 });
 
@@ -488,16 +584,28 @@ document.querySelector("#file").onchange = async e => {
   const file = e.target.files[0];
   if (!file) return;
   try {
-    applyCube(await file.text(), file.name);
+    const text = await file.text();
+    applyCube(text, file.name);
     currentLook = "natural";
-    document.querySelectorAll("[data-look]").forEach(b => {
-      b.classList.remove("bg-zinc-700");
-      b.classList.add("bg-zinc-900");
-    });
+    
+    if(!savedLuts.some(l => l.name === file.name)) {
+      savedLuts.push({ name: file.name, text });
+      localStorage.setItem("cam_custom_luts", JSON.stringify(savedLuts));
+      renderCustomOptions();
+    }
   } catch (error) {
     alert("Could not load LUT: " + error.message);
   }
   e.target.value = "";
+};
+
+document.querySelector("#zoom").oninput = e => {
+  zoomLevel = Number(e.target.value);
+  document.querySelector("#zoomValue").textContent = zoomLevel.toFixed(1) + "x";
+  if (activeCameraTrack) {
+    const caps = activeCameraTrack.getCapabilities?.();
+    if (caps?.zoom) activeCameraTrack.applyConstraints({ advanced: [{ zoom: zoomLevel }] }).catch(() => {});
+  }
 };
 
 document.querySelector("#intensity").oninput = e => {
@@ -514,7 +622,9 @@ document.querySelector("#exposure").oninput = e => {
     }
   }
 };
-document.querySelector("#resolution").onchange = resizeCanvas;
+
+resSelect.onchange = resizeCanvas;
+fpsSelect.onchange = resizeCanvas;
 document.querySelector("#orientation").onchange = resizeCanvas;
 window.addEventListener("pagehide", stopCamera);
 </script>
